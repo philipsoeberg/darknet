@@ -110,7 +110,7 @@ typedef struct{
 } update_args;
 
 struct network;
-typedef struct network network;
+//typedef struct network network;
 
 struct layer;
 typedef struct layer layer;

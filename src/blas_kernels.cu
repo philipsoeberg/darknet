@@ -1003,6 +1003,15 @@ extern "C" void softmax_gpu(float *input, int n, int batch, int batch_offset, in
     check_error(cudaPeekAtLastError());
 }
 
+__device__ void atomicAddps(float* address, float val)
+{
+    unsigned long long int* address_as_ull = (unsigned long long int*)address;
+    unsigned long long int old = *address_as_ull, assumed;
+    do {
+        assumed = old;
+        old = atomicCAS((int*)address_as_ull, (int)assumed, (int)val + assumed);
+    } while (assumed != old);
+}
 
 __global__ void upsample_kernel(size_t N, float *x, int w, int h, int c, int batch, int stride, int forward, float scale, float *out)
 {
@@ -1025,7 +1034,7 @@ __global__ void upsample_kernel(size_t N, float *x, int w, int h, int c, int bat
 
 
     if(forward) out[out_index] += scale * x[in_index];
-    else atomicAdd(x+in_index, scale * out[out_index]);
+    else atomicAddps(x+in_index, scale * out[out_index]);
 }
 extern "C" void upsample_gpu(float *in, int w, int h, int c, int batch, int stride, int forward, float scale, float *out)
 {
