@@ -1445,6 +1445,9 @@ image load_image_stb(char *filename, int channels)
     unsigned char *data = stbi_load(filename, &w, &h, &c, channels);
     if (!data) {
         fprintf(stderr, "Cannot load image \"%s\"\nSTB Reason: %s\n", filename, stbi_failure_reason());
+        image im;
+        im.data = NULL;
+        return im;
         exit(0);
     }
     if(channels) c = channels;
