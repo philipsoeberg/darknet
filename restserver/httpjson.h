@@ -17,7 +17,7 @@ struct httpjson_job_reply {
   char org_image[CONFIG_POST_DATA_SIZE_MAX+1]; //base64 or null of original image
   char mark_image[CONFIG_POST_DATA_SIZE_MAX+1]; //base64 or null of marked image
   
-  double predict_time;
+  char predict_time[10];
 
   char is_person; //true/false if "person" was detected
   int is_person_confidence;  //level of confidence

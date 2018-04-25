@@ -57,7 +57,7 @@ handle_image_post(const char *body, char **response)
   json_object_set_new(jsonout, "description", json_string(reply.description));
   json_object_set_new(jsonout, "org_image", json_string(reply.org_image));
   json_object_set_new(jsonout, "mark_image", json_string(reply.mark_image));
-  json_object_set_new(jsonout, "predict_time", json_real(reply.predict_time));
+  json_object_set_new(jsonout, "predict_time", json_string(reply.predict_time));
   json_object_set_new(jsonout, "is_person", json_integer(reply.is_person));
   json_object_set_new(jsonout, "is_person_confidence", json_integer(reply.is_person_confidence));
 

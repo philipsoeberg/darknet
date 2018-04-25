@@ -2,9 +2,6 @@
 #include "sys_includes.h"
 #include "debug.h"
 
-int _rpcerr_code;
-char _rpcerr_message[512];
-
 void hex(void *buf, int bufsz, const char *fmt, ...)
 {
   unsigned char c;

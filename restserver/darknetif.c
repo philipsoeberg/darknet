@@ -89,8 +89,8 @@ int darknetif_process(struct httpjson_job *job, struct httpjson_job_reply *reply
     double mytime;
     mytime=what_time_is_it_now();
     network_predict(net, X);
-    reply->predict_time = what_time_is_it_now()-mytime;
-    printf("%s: Predicted in %f seconds.\n", infile, reply->predict_time);
+    snprintf(reply->predict_time, sizeof(reply->predict_time), "%0.1f", what_time_is_it_now()-mytime);
+    printf("%s: Predicted in %s seconds.\n", infile, reply->predict_time);
     int nboxes = 0;
     detection *dets = get_network_boxes(net, im.w, im.h, config.thresh, config.hier_thresh, 0, 1, &nboxes);
     //printf("%d\n", nboxes);
