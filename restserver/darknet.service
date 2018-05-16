@@ -1,0 +1,15 @@
+[Unit]
+After=syslog.target network.target
+
+[Service]
+ExecStart=/srv/darknet.philipsoeberg/restserver/restserver -vv --thresh 0.6
+User=root
+Group=root
+Nice=10
+Restart=on-failure
+KillSignal=SIGINT
+WorkingDirectory=/srv/darknet.philipsoeberg
+
+[Install]
+WantedBy=multi-user.target
+
