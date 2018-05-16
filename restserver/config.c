@@ -27,6 +27,8 @@ void config_cmd_args_print_usage(void)
 "\n" "      --cfgfile         Darknet cfgfile (default: cfg/yolov2-tiny.cfg)"
 "\n" "      --weightfile      Darknet weightfile (default: yolov2-tiny.weights)"
 "\n" "      --labelfile       Darknet labelfile (Default: data/coco.names)"
+"\n" "      --thresh          Positive detection threshold"
+"\n" "      --hier_thresh     "
 "\n"
 "\n" "  -v  --verbose         Increase verbose. Up to 3 times."
 "\n" "  -?, --help            Give this help list"
@@ -37,13 +39,15 @@ void config_cmd_args_print_usage(void)
 int config_dump_running_config()
 {
   INF("Running configuration:\n");
-  INF(" --port       %d\n", config.port);
-  INF(" --listen     %s\n", config.listen);
-  INF(" --datacfg    %s\n", config.datacfg);
-  INF(" --cfgfile    %s\n", config.cfgfile);
-  INF(" --weightfile %s\n", config.weightfile);
-  INF(" --labelfile  %s\n", config.labelfile);
-  INF(" --verbose    %d\n", config.verbose);
+  INF(" --port        %d\n", config.port);
+  INF(" --listen      %s\n", config.listen);
+  INF(" --datacfg     %s\n", config.datacfg);
+  INF(" --cfgfile     %s\n", config.cfgfile);
+  INF(" --weightfile  %s\n", config.weightfile);
+  INF(" --labelfile   %s\n", config.labelfile);
+  INF(" --thresh      %f\n", config.thresh);
+  INF(" --hier_thresh %f\n", config.hier_thresh);
+  INF(" --verbose     %d\n", config.verbose);
   return 0;
 }
 
@@ -62,6 +66,8 @@ int config_cmd_args_parse(int argc, char *argv[])
     OPT_CFGFILE,
     OPT_WEIGHTFILE,
     OPT_LABELFILE,
+    OPT_THRESH,
+    OPT_HIER_THRESH,
   };
 
   while (1) {
@@ -72,6 +78,8 @@ int config_cmd_args_parse(int argc, char *argv[])
       {"cfgfile",      required_argument, 0, OPT_CFGFILE},
       {"weightfile",   required_argument, 0, OPT_WEIGHTFILE},
       {"labelfile",    required_argument, 0, OPT_LABELFILE},
+      {"thresh",       required_argument, 0, OPT_THRESH},
+      {"hier_thresh",  required_argument, 0, OPT_HIER_THRESH},
       {"verbose",      no_argument, 0, 'V'},
       {"help",         no_argument, 0, '?'},
       {0, 0, 0, 0}
@@ -105,6 +113,15 @@ int config_cmd_args_parse(int argc, char *argv[])
         break;
       case OPT_LABELFILE:
         config.labelfile = optarg;
+        break;
+      case OPT_THRESH:
+	config.thresh = strtof(optarg, &tailptr);
+        if ((optarg == tailptr) || (*tailptr != 0x0)) { ERR("Error: Invalid value for argument --thresh\n"); return -1; }
+	break;
+      case OPT_HIER_THRESH:
+	config.hier_thresh = strtof(optarg, &tailptr);
+        if ((optarg == tailptr) || (*tailptr != 0x0)) { ERR("Error: Invalid value for argument --hier_thresh\n"); return -1; }
+	break;
         break;
       case 'v':
         config.verbose++;

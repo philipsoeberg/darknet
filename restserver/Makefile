@@ -2,8 +2,8 @@
 LDFLAGS+= -L.. -ldarknet -lpthread -lmicrohttpd -ljansson
 CFLAGS += -fdiagnostics-color=auto -Wall -Wextra -Wno-unused -Wno-unused-parameter -Wno-error -g -I../include/
 
-CFLAGS += -save-temps -g
-#CFLAGS += -O3
+#CFLAGS += -save-temps -g
+CFLAGS += -O3 -march=native -mtune=native
 
 
 TARGET=restserver

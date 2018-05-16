@@ -36,6 +36,7 @@ NVCC=nvcc
 AR=ar
 ARFLAGS=rcs
 OPTS=-Os
+OPTS=-O3 -march=native -mtune=native
 LDFLAGS= -lm -lpthread -lrt
 COMMON= -Iinclude/ -Isrc/
 CFLAGS=-Wall -Wno-unused-result -Wno-unknown-pragmas -Wfatal-errors -fPIC
