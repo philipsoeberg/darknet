@@ -2,7 +2,8 @@
 After=syslog.target network.target
 
 [Service]
-ExecStart=/srv/darknet.philipsoeberg/restserver/restserver -vv --thresh 0.6
+#ExecStart=/srv/darknet.philipsoeberg/restserver/restserver -vv --thresh 0.6 --cfgfile cfg/yolov3.cfg --weightfile yolov3.weights
+ExecStart=/srv/darknet.philipsoeberg/restserver/restserver --thresh 0.6 --cfgfile yolov3-tiny.cfg --weightfile yolov3-tiny.weights
 User=root
 Group=root
 Nice=10

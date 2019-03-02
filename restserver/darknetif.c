@@ -56,6 +56,7 @@ int darknetif_process(struct httpjson_job *job, struct httpjson_job_reply *reply
     static char *infile = "/tmp/darknet_rest.in.jpg";
     static char *outfile = "/tmp/darknet_rest.out.jpg";
     int i;
+    INF("--> Begin processing %s\n", infile);
     i = my_b64_pton(job->image, (unsigned char*)bin_image, sizeof(bin_image));
     DBG3("Base64 decode returned size %d\n", i);
     if (i < 1) {
@@ -90,7 +91,7 @@ int darknetif_process(struct httpjson_job *job, struct httpjson_job_reply *reply
     mytime=what_time_is_it_now();
     network_predict(net, X);
     snprintf(reply->predict_time, sizeof(reply->predict_time), "%0.1f", what_time_is_it_now()-mytime);
-    printf("%s: Predicted in %s seconds.\n", infile, reply->predict_time);
+    INF("Processing complete. Spent %s seconds.\n", reply->predict_time);
     int nboxes = 0;
     detection *dets = get_network_boxes(net, im.w, im.h, config.thresh, config.hier_thresh, 0, 1, &nboxes);
     //printf("%d\n", nboxes);
@@ -104,9 +105,14 @@ int darknetif_process(struct httpjson_job *job, struct httpjson_job_reply *reply
             for(j = 0; j < l.classes; ++j) {
                 if (dets[i].prob[j] > config.thresh) {
                     if (0 == strcmp("person", names[j])) {
+                        int confidence = (int)(names[j], dets[i].prob[j]*100);
                         reply->is_person = 1;
-                        reply->is_person_confidence = (int)(names[j], dets[i].prob[j]*100);
-                        INF("Found a Person! Confidence is %d %%\n", reply->is_person_confidence);
+                        if (confidence > reply->is_person_confidence) {
+                          reply->is_person_confidence = confidence;
+                          INF("Found a Person! Confidence is %d %%\n", reply->is_person_confidence);
+                        } else {
+                          INF("Found another person! Confidence is %d %% (Only returning highest)\n", confidence);
+                        }
                     }
                 }
             }
@@ -139,6 +145,6 @@ int darknetif_process(struct httpjson_job *job, struct httpjson_job_reply *reply
         //strncpy(reply->org_image, job->image, sizeof(reply->org_image));
     }
     
-    INF("Prediction done. Returning result\n");
+    DBG1("Prediction done. Returning result\n");
     return 0;
 }

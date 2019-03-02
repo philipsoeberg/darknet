@@ -87,6 +87,18 @@ parse_request(const char *url, int method, const char *body, char **response)
       return 200;
     }
   }
+  if (method == PARSE_REQUEST_METHOD_GET) {
+    if ((url[0] != '/') || (url[1] != 0x0)) return 404;
+    FILE *f = fopen("index.html", "rb");
+    if (f==NULL) return 500;
+    fseek(f, 0, SEEK_END);
+    long fsize = ftell(f);
+    fseek(f, 0, SEEK_SET);
+    *response = calloc(1, fsize + 1);
+    fread(*response, fsize, 1, f);
+    fclose(f);
+    return 200;
+  }
   DBG3("Nothing parsed in parse_request\n");
   return 500;
 }
@@ -114,6 +126,7 @@ struct con_type_post {
 };
 
 static char *html_error_internal_error = "<html><body>INTERNAL ERROR</body></html>"; //MHD_RESPMEM_PERSISTENT
+static char *html_error_404_error = "<html><body>404 unknown resource requested</body></html>"; //MHD_RESPMEM_PERSISTENT
 static char *html_error_method_not_allowed = "<html><body>Method not allowed. Only GET and POST is processed.</body></html>";
 
 int answer_to_connection (void *cls, struct MHD_Connection *connection,
@@ -135,8 +148,13 @@ int answer_to_connection (void *cls, struct MHD_Connection *connection,
   if (0 == strcmp(method, "GET")) {
     char *response=NULL;
     http_code = parse_request(url, PARSE_REQUEST_METHOD_GET, NULL, &response);
+    if (http_code == 404) {
+      DBG2("Returning 404 for URL [%s]\n", url);
+      queue_response(connection, html_error_404_error, MHD_RESPMEM_PERSISTENT, 404);
+    } else
     if (response) {
-      DBG2("HTTP: Response %s\n", response);
+      DBG3("HTTP: Response %s\n", response);
+      DBG2("HTTP: Responded to GET request\n");
       queue_response(connection, response, MHD_RESPMEM_MUST_FREE, http_code);
     } else {
       WRN("HTTP: No Reponse generated.. Returning code 500\n");
@@ -154,7 +172,7 @@ int answer_to_connection (void *cls, struct MHD_Connection *connection,
 
   if (*con_cls == NULL) {
     /* first POST-part, which is headers only */
-    INF("Receiving new job\n");
+    DBG1("Start HTTP reception.\n");
     con_type_post = calloc(1, sizeof(struct con_type_post));
     ASSERT_DO(NULL != con_type_post, return MHD_NO);
     con_type_post->post_data = calloc(1, CONFIG_POST_DATA_SIZE_MAX);
@@ -170,13 +188,13 @@ int answer_to_connection (void *cls, struct MHD_Connection *connection,
 
   if (*upload_data_size == 0) {
     /* last POST-part, parse POST data, send response, clear con_cls */
-    INF("New job received. Processing it\n");
+    DBG1("New job received. Processing it\n");
     DBG3("Post DATA: [%s]\n", con_type_post->post_data);
     http_code = parse_request(url, PARSE_REQUEST_METHOD_POST, con_type_post->post_data, &con_type_post->response);
     if (con_type_post->response) {
       DBG3("HTTP: Response %s\n", con_type_post->response);
       queue_response(con_type_post->connection, con_type_post->response, MHD_RESPMEM_MUST_FREE, http_code);
-      INF("Done sending results. Clearing connection and awaiting new job\n");
+      DBG1("Done sending results. Clearing connection and awaiting new job\n");
     } else {
       WRN("HTTP: No Reponse generated.. Returning code 500\n");
       queue_response(con_type_post->connection, html_error_internal_error, MHD_RESPMEM_PERSISTENT, 500);
